@@ -1,0 +1,11 @@
+services:
+    app:
+        build:
+            context: .
+            args:
+                - NODE_ENV=development
+        volumes:
+            - ./src:/app/src
+            - /app/node_modules
+        restart: always
+        command: yarn start:dev

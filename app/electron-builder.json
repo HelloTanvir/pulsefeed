@@ -1,0 +1,15 @@
+{
+    "appId": "com.tanvir.pulsefeed",
+    "files": ["dist/**/*"],
+    "icon": "desktop-icon.png",
+    "mac": {
+        "target": "dmg"
+    },
+    "linux": {
+        "target": "AppImage",
+        "category": "Utility"
+    },
+    "win": {
+        "target": ["portable", "msi"]
+    }
+}
