@@ -4,12 +4,10 @@ import { Repository } from 'typeorm';
 import { BookmarkEntity } from '../entities/bookmark.entity';
 import { NewsArticleEntity } from '../entities/news-article.entity';
 import { CreateBookmarkDto, BookmarkResponseDto } from '../dto/bookmark.dto';
-import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class BookmarkService {
     constructor(
-        private readonly userService: UserService,
         @InjectRepository(BookmarkEntity)
         private readonly bookmarkRepository: Repository<BookmarkEntity>,
         @InjectRepository(NewsArticleEntity)
@@ -25,15 +23,13 @@ export class BookmarkService {
         });
 
         if (!article) {
-            throw new NotFoundException('Article not found');
+            throw new NotFoundException('Article not found.');
         }
-
-        const user = await this.userService.findOneUserById(userId);
 
         // Check if bookmark already exists
         const existingBookmark = await this.bookmarkRepository.findOne({
             where: {
-                user: { id: user.id },
+                userId,
                 article: { id: article.id },
             },
             relations: ['article'],
@@ -44,7 +40,7 @@ export class BookmarkService {
         }
 
         const bookmark = this.bookmarkRepository.create({
-            user,
+            userId,
             article,
             note: createBookmarkDto.note,
         });
@@ -55,7 +51,7 @@ export class BookmarkService {
 
     async getBookmarks(userId: string): Promise<BookmarkResponseDto[]> {
         const bookmarks = await this.bookmarkRepository.find({
-            where: { user: { id: userId } },
+            where: { userId },
             relations: ['article'],
             order: { createdAt: 'DESC' },
         });
@@ -67,7 +63,7 @@ export class BookmarkService {
         const bookmark = await this.bookmarkRepository.findOne({
             where: {
                 id: bookmarkId,
-                user: { id: userId },
+                userId,
             },
         });
 
@@ -86,7 +82,7 @@ export class BookmarkService {
         const bookmark = await this.bookmarkRepository.findOne({
             where: {
                 id: bookmarkId,
-                user: { id: userId },
+                userId,
             },
             relations: ['article'],
         });
