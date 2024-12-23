@@ -3,11 +3,15 @@ import { NewsStorageService } from './services/news-storage.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RabbitMQConsumerService } from './services/rabbitmq-consumer.service';
 import { NewsArticleEntity } from './entities/news-article.entity';
-import { NewsController } from './news.controller';
+import { NewsController } from './controllers/news.controller';
+import { UserModule } from 'src/user/user.module';
+import { BookmarkEntity } from './entities/bookmark.entity';
+import { BookmarkService } from './services/bookmark.service';
+import { BookmarkController } from './controllers/bookmark.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([NewsArticleEntity])],
-    controllers: [NewsController],
-    providers: [NewsStorageService, RabbitMQConsumerService],
+    imports: [TypeOrmModule.forFeature([NewsArticleEntity, BookmarkEntity]), UserModule],
+    controllers: [NewsController, BookmarkController],
+    providers: [NewsStorageService, RabbitMQConsumerService, BookmarkService],
 })
 export class NewsStorageModule {}
