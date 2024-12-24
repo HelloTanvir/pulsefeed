@@ -6,10 +6,13 @@ import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
+import { RtStrategy } from './strategies/refresh-token.strategy';
+import { AtStrategy } from './strategies/access-token.strategy';
 
 @Module({
     imports: [JwtModule.register({}), TypeOrmModule.forFeature([Auth]), UserModule],
     controllers: [AuthController],
-    providers: [AuthService, HashService],
+    providers: [AuthService, HashService, AtStrategy, RtStrategy],
+    exports: [AuthService],
 })
 export class AuthModule {}

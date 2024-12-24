@@ -19,7 +19,7 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt') {
     async validate(payload: any) {
         const userAuth = await this.authService.findByUserId(payload['userId']);
 
-        if (!userAuth || !userAuth.refreshToken) {
+        if (!userAuth?.refreshToken) {
             throw new UnauthorizedException();
         }
 

@@ -10,14 +10,6 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Get(':userId')
-    // TODO: implement admin access only
-    @HttpCode(HttpStatus.OK)
-    @ApiBearerAuth()
-    findOneUserById(@Param('userId') userId: string): Promise<User> {
-        return this.userService.findOneUserById(userId);
-    }
-
     @Get('current-user')
     @HttpCode(HttpStatus.OK)
     @ApiBearerAuth()
