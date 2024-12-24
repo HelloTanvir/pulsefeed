@@ -13,8 +13,6 @@ services:
         depends_on:
             - db
             - redis
-            - rabbitmq
-            - elasticsearch
 
     db:
         image: postgres
@@ -33,23 +31,5 @@ services:
         ports:
             - '6379:6379'
 
-    rabbitmq:
-        image: rabbitmq:3-management
-        container_name: news-aggregator-rabbitmq
-        ports:
-            - '5672:5672' # for RabbitMQ
-            - '15672:15672' # for RabbitMQ management UI
-
-    elasticsearch:
-        image: elasticsearch:7.17.23
-        container_name: news-aggregator-elasticsearch
-        environment:
-            - discovery.type=single-node
-        volumes:
-            - es-data:/usr/share/elasticsearch/data
-        ports:
-            - '9200:9200'
-
 volumes:
     db-data:
-    es-data:

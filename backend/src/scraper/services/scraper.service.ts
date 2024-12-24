@@ -5,7 +5,9 @@ import { NewsArticle, NewsMessage, NewsPortalConfig, NewsSection } from '../type
 import * as puppeteer from 'puppeteer';
 import { Retry } from '../decorators/retry.decorator';
 import { RetryUtility } from '../utils/retry.util';
-import { RabbitMQService } from './rabbitmq.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { NEWS_QUEUE } from 'src/common/constants/queue.constant';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class ScraperService {
@@ -15,7 +17,7 @@ export class ScraperService {
     // import * as cheerio from 'cheerio';
     // private $: cheerio.CheerioAPI;
 
-    constructor(private readonly rabbitMQService: RabbitMQService) {}
+    constructor(@InjectQueue(NEWS_QUEUE) private readonly newsQueue: Queue) {}
 
     @Cron(CronExpression.EVERY_HOUR, { name: 'scraper', timeZone: 'BST' })
     async handleScraping() {
@@ -37,7 +39,7 @@ export class ScraperService {
                         totalArticles: articles.length,
                     };
 
-                    await this.rabbitMQService.publishNewsArticles(message);
+                    await this.newsQueue.add('news', message);
                 }
             }
 

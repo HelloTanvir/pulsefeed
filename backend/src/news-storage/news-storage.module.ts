@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { NewsStorageService } from './services/news-storage.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RabbitMQConsumerService } from './services/rabbitmq-consumer.service';
+import { NewsConsumerService } from './services/news-consumer.service';
 import { NewsArticleEntity } from './entities/news-article.entity';
 import { NewsController } from './controllers/news.controller';
 import { BookmarkEntity } from './entities/bookmark.entity';
@@ -11,6 +11,6 @@ import { BookmarkController } from './controllers/bookmark.controller';
 @Module({
     imports: [TypeOrmModule.forFeature([NewsArticleEntity, BookmarkEntity])],
     controllers: [NewsController, BookmarkController],
-    providers: [NewsStorageService, RabbitMQConsumerService, BookmarkService],
+    providers: [NewsStorageService, NewsConsumerService, BookmarkService],
 })
 export class NewsStorageModule {}

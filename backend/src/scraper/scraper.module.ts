@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScraperService } from './services/scraper.service';
-import { RabbitMQService } from './services/rabbitmq.service';
-import { BatchPublisherService } from './services/batch-publisher.service';
+import { NEWS_QUEUE } from 'src/common/constants/queue.constant';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-    imports: [ScheduleModule.forRoot()],
-    providers: [ScraperService, RabbitMQService, BatchPublisherService],
+    imports: [
+        ScheduleModule.forRoot(),
+        BullModule.registerQueue({
+            name: NEWS_QUEUE,
+        }),
+    ],
+    providers: [ScraperService],
 })
 export class ScraperModule {}

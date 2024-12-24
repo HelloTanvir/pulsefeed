@@ -9,6 +9,7 @@ import { DBModule } from './db/db.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { UserModule } from './user/user.module';
 import { NewsStorageModule } from './news-storage/news-storage.module';
+import { BullMQModule } from './bullmq/bullmq.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { NewsStorageModule } from './news-storage/news-storage.module';
         DBModule,
         AuthModule,
         UserModule,
+        BullMQModule,
         ScraperModule,
         NewsStorageModule,
     ],
