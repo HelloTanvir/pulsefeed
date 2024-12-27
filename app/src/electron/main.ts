@@ -6,6 +6,7 @@ const createWindow = () => {
   const win = new BrowserWindow({
     width: 1000,
     height: 1000,
+    autoHideMenuBar: true,
   });
 
   if (isDev) win.loadURL("http://localhost:3000");
@@ -13,14 +14,6 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
-  // test code
-
-  fetch("https://en.prothomalo.com/sports").then((res) => {
-    console.log(res);
-  });
-
-  // end test code
-
   createWindow();
 
   app.on("activate", () => {
