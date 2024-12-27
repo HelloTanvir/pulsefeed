@@ -1,14 +1,12 @@
-import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { NOTIFICATION_QUEUE } from 'src/common/constants/queue.constant';
 import { NotificationService } from './notification.service';
+import { NotificationConsumerService } from './notification-consumer.service';
+import { NotificationGateway } from './notification.gateway';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { NotificationEntity } from './entities/notification.entity';
 
 @Module({
-    imports: [
-        BullModule.registerQueue({
-            name: NOTIFICATION_QUEUE,
-        }),
-    ],
-    providers: [NotificationService],
+    imports: [TypeOrmModule.forFeature([NotificationEntity])],
+    providers: [NotificationService, NotificationConsumerService, NotificationGateway],
 })
 export class NotificationModule {}

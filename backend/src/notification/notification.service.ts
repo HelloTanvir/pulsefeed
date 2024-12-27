@@ -40,6 +40,7 @@ export class NotificationService {
                 user: {
                     id: userId,
                 },
+                isRead: false,
             },
             order: {
                 createdAt: 'DESC',

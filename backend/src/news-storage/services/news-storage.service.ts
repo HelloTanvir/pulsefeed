@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { Like, Between, EntityManager } from 'typeorm';
+import { Like, Between, EntityManager, In } from 'typeorm';
 import { NewsArticleEntity } from '../entities/news-article.entity';
 import { NewsMessage } from 'src/scraper/types/news.type';
 import { NewsQueryParamsDto } from '../dto/query-params.dto';
@@ -24,31 +24,54 @@ export class NewsStorageService {
     ) {}
 
     async storeNewsArticles(message: NewsMessage): Promise<void> {
+        const { articles, portalName, scrapedAt } = message;
+
         try {
-            const articles = message.articles.map((article) => {
-                const entity = new NewsArticleEntity({});
-                entity.title = article.title;
-                entity.content = article.content;
-                entity.url = article.url;
-                entity.author = article.author;
-                entity.portal = article.portal.toLowerCase();
-                entity.section = article.section.toLowerCase();
-                entity.imageUrl = article.imageUrl;
-                entity.publishedAt = article.publishedAt;
-                entity.scrapedAt = message.scrapedAt;
-                return entity;
+            const urls = articles.map((article) => article.url);
+            const existingArticles = await this.entityManager.find(NewsArticleEntity, {
+                where: { url: In(urls) },
+                select: ['url'],
             });
+            const existingUrls = new Set(existingArticles.map((article) => article.url));
 
-            await this.entityManager.save(articles);
+            const newArticles = articles
+                .filter((article) => !existingUrls.has(article.url))
+                .map((article) => {
+                    const entity = new NewsArticleEntity({
+                        ...article,
+                        portal: article.portal.toLowerCase(),
+                        section: article.section.toLowerCase(),
+                        scrapedAt,
+                    });
+                    return entity;
+                });
 
-            const lastArticle = articles[articles.length - 1];
-            await this.notificationsQueue.add(NOTIFICATION_QUEUE, { article: lastArticle });
+            if (newArticles.length === 0) {
+                this.logger.log(`No new articles to store from ${portalName}`);
+                return;
+            }
 
-            this.logger.log(
-                `Successfully stored ${articles.length} articles from ${message.portalName}`
-            );
+            await this.entityManager.transaction(async (transactionalEntityManager) => {
+                const savedArticles = await transactionalEntityManager.save(newArticles);
+
+                // Queue notifications for all new articles
+                const notificationPromises = savedArticles.map((article) =>
+                    this.notificationsQueue.add(NOTIFICATION_QUEUE, { article })
+                );
+                await Promise.all(notificationPromises);
+
+                // Queue notification for the last article
+                // await this.notificationsQueue.add(NOTIFICATION_QUEUE, {
+                //     article: savedArticles[savedArticles.length - 1],
+                // });
+
+                this.logger.log(
+                    `Successfully stored ${savedArticles.length} new articles from ${portalName}. ` +
+                        `Skipped ${articles.length - savedArticles.length} existing articles.`
+                );
+            });
         } catch (error) {
-            this.logger.error('Error storing news articles:', error);
+            this.logger.error(`Error storing news articles from ${portalName}:`, error);
             throw error;
         }
     }
