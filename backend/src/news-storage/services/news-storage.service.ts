@@ -9,6 +9,9 @@ import { User } from 'src/user/entities/user.entity';
 import { CommentDto } from '../dto/comment.dto';
 import { CommentEntity } from '../entities/comment.entity';
 import { AddArticleDto } from '../dto/add-article.dto';
+import { Queue } from 'bullmq';
+import { NOTIFICATION_QUEUE } from 'src/common/constants/queue.constant';
+import { InjectQueue } from '@nestjs/bullmq';
 
 @Injectable()
 export class NewsStorageService {
@@ -16,7 +19,8 @@ export class NewsStorageService {
 
     constructor(
         @InjectEntityManager()
-        private readonly entityManager: EntityManager
+        private readonly entityManager: EntityManager,
+        @InjectQueue(NOTIFICATION_QUEUE) private readonly notificationsQueue: Queue
     ) {}
 
     async storeNewsArticles(message: NewsMessage): Promise<void> {
@@ -37,6 +41,9 @@ export class NewsStorageService {
 
             await this.entityManager.save(articles);
 
+            const lastArticle = articles[articles.length - 1];
+            await this.notificationsQueue.add(NOTIFICATION_QUEUE, { article: lastArticle });
+
             this.logger.log(
                 `Successfully stored ${articles.length} articles from ${message.portalName}`
             );
@@ -55,6 +62,8 @@ export class NewsStorageService {
         });
 
         await this.entityManager.save(article);
+
+        await this.notificationsQueue.add(NOTIFICATION_QUEUE, { article });
 
         return article;
     }

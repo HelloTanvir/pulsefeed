@@ -10,6 +10,7 @@ import { ScraperModule } from './scraper/scraper.module';
 import { UserModule } from './user/user.module';
 import { NewsStorageModule } from './news-storage/news-storage.module';
 import { BullMQModule } from './bullmq/bullmq.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { BullMQModule } from './bullmq/bullmq.module';
         UserModule,
         ScraperModule,
         NewsStorageModule,
+        NotificationModule,
     ],
     providers: [
         {

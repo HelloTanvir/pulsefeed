@@ -14,12 +14,14 @@ export class NewsConsumerService extends WorkerHost {
     }
 
     async process(job: Job<NewsMessage>) {
-        this.logger.log(`Processing job with ID: ${job.id}`);
+        if (job.name === NEWS_QUEUE) {
+            this.logger.log(`Processing job with ID: ${job.id}`);
 
-        const message = job.data;
-        await this.newsStorageService.storeNewsArticles(message);
+            const message = job.data;
+            await this.newsStorageService.storeNewsArticles(message);
 
-        // wait 5 seconds before processing the next job
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+            // wait 2 seconds before processing the next job
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
     }
 }
