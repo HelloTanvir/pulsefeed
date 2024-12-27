@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetCurrentUser } from '../common/decorators/get-current-user.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
+import { SubscribeToSectionDto } from './dto/subscribe-to-section.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -27,11 +28,13 @@ export class UserController {
         return this.userService.updateUser(userId, updateUserDto);
     }
 
-    @Delete(':userId')
-    // TODO: implement admin access only
+    @Patch('subscribe-to-section')
     @HttpCode(HttpStatus.OK)
     @ApiBearerAuth()
-    removeUser(@Param('userId') userId: string): Promise<User> {
-        return this.userService.removeUser(userId);
+    subscribeToSection(
+        @GetCurrentUser('userId') userId: string,
+        @Body() subscribeToSectionDto: SubscribeToSectionDto
+    ): Promise<User> {
+        return this.userService.subscribeToSection(userId, subscribeToSectionDto);
     }
 }

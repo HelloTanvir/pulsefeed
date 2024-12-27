@@ -7,9 +7,10 @@ import { NewsController } from './controllers/news.controller';
 import { BookmarkEntity } from './entities/bookmark.entity';
 import { BookmarkService } from './services/bookmark.service';
 import { BookmarkController } from './controllers/bookmark.controller';
+import { CommentEntity } from './entities/comment.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([NewsArticleEntity, BookmarkEntity])],
+    imports: [TypeOrmModule.forFeature([NewsArticleEntity, CommentEntity, BookmarkEntity])],
     controllers: [NewsController, BookmarkController],
     providers: [NewsStorageService, NewsConsumerService, BookmarkService],
 })

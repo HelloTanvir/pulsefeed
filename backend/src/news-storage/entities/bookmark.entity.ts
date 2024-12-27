@@ -1,5 +1,5 @@
 import { AbstractEntity } from 'src/db/abstract.entity';
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { NewsArticleEntity } from './news-article.entity';
 
 @Entity('bookmarks')
@@ -11,9 +11,6 @@ export class BookmarkEntity extends AbstractEntity<BookmarkEntity> {
     @ManyToOne(() => NewsArticleEntity)
     @JoinColumn()
     article: NewsArticleEntity;
-
-    @CreateDateColumn()
-    createdAt: Date;
 
     @Column({ type: 'text', nullable: true })
     note?: string;

@@ -15,9 +15,9 @@ import { BullMQModule } from './bullmq/bullmq.module';
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         DBModule,
+        BullMQModule,
         AuthModule,
         UserModule,
-        BullMQModule,
         ScraperModule,
         NewsStorageModule,
     ],

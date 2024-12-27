@@ -5,6 +5,7 @@ import { HashService } from '../common/services/hash.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { SubscribeToSectionDto } from './dto/subscribe-to-section.dto';
 
 @Injectable()
 export class UserService {
@@ -69,6 +70,22 @@ export class UserService {
     async removeUser(userId: string): Promise<User> {
         const user = await this.findOneUserById(userId);
         await this.entityManager.remove(user);
+        return user;
+    }
+
+    async subscribeToSection(
+        userId: string,
+        subscribeToSectionDto: SubscribeToSectionDto
+    ): Promise<User> {
+        const user = await this.findOneUserById(userId);
+
+        const section = subscribeToSectionDto.name.toLowerCase();
+
+        if (!user.subscribedSections.includes(section)) {
+            user.subscribedSections.push(section);
+            await this.entityManager.save(user);
+        }
+
         return user;
     }
 }

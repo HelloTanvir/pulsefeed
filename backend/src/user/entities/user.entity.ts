@@ -14,4 +14,7 @@ export class User extends AbstractEntity<User> {
 
     @Column({ select: false, default: false })
     isAdmin: boolean;
+
+    @Column({ type: 'simple-array', default: [] })
+    subscribedSections: string[];
 }

@@ -9,25 +9,6 @@ export interface NewsArticle {
     imageUrl?: string;
 }
 
-export interface NewsPortalConfig {
-    name: string;
-    baseUrl: string;
-    sections: NewsSection[];
-}
-
-export interface NewsSection {
-    name: string;
-    url: string;
-    selector: {
-        article: string;
-        title: string;
-        content: string;
-        author?: string;
-        publishedAt: string;
-        imageUrl?: string;
-    };
-}
-
 export interface NewsMessage {
     articles: NewsArticle[];
     portalName: string;

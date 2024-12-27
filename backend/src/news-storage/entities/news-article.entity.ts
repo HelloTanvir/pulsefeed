@@ -1,5 +1,7 @@
 import { AbstractEntity } from 'src/db/abstract.entity';
-import { Entity, Column, CreateDateColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { CommentEntity } from './comment.entity';
 
 @Entity()
 export class NewsArticleEntity extends AbstractEntity<NewsArticleEntity> {
@@ -27,9 +29,16 @@ export class NewsArticleEntity extends AbstractEntity<NewsArticleEntity> {
     @Column({ type: 'timestamp' })
     publishedAt: Date;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     scrapedAt: Date;
+
+    @ManyToMany(() => User)
+    @JoinTable()
+    likedBy: User[];
+
+    @OneToMany(() => CommentEntity, (comment) => comment.article)
+    comments: CommentEntity[];
+
+    @Column({ default: false })
+    createdByAdmin: boolean;
 }

@@ -1,32 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, Like, Between } from 'typeorm';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { Like, Between, EntityManager } from 'typeorm';
 import { NewsArticleEntity } from '../entities/news-article.entity';
-import { Retry } from 'src/scraper/decorators/retry.decorator';
 import { NewsMessage } from 'src/scraper/types/news.type';
 import { NewsQueryParamsDto } from '../dto/query-params.dto';
-import { NewsArticlesResponseDto } from '../dto/news-response.dto';
+import { NewsArticleResponseDto, NewsArticlesResponseDto } from '../dto/news-response.dto';
+import { User } from 'src/user/entities/user.entity';
+import { CommentDto } from '../dto/comment.dto';
+import { CommentEntity } from '../entities/comment.entity';
+import { AddArticleDto } from '../dto/add-article.dto';
 
 @Injectable()
 export class NewsStorageService {
     private readonly logger = new Logger(NewsStorageService.name);
 
     constructor(
-        @InjectRepository(NewsArticleEntity)
-        private readonly newsRepository: Repository<NewsArticleEntity>,
-        private readonly dataSource: DataSource
+        @InjectEntityManager()
+        private readonly entityManager: EntityManager
     ) {}
 
-    @Retry({
-        maxAttempts: 3,
-        delayMs: 1000,
-        exponentialBackoff: true,
-    })
     async storeNewsArticles(message: NewsMessage): Promise<void> {
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-
         try {
             const articles = message.articles.map((article) => {
                 const entity = new NewsArticleEntity({});
@@ -34,35 +27,36 @@ export class NewsStorageService {
                 entity.content = article.content;
                 entity.url = article.url;
                 entity.author = article.author;
-                entity.portal = article.portal;
-                entity.section = article.section;
+                entity.portal = article.portal.toLowerCase();
+                entity.section = article.section.toLowerCase();
                 entity.imageUrl = article.imageUrl;
                 entity.publishedAt = article.publishedAt;
                 entity.scrapedAt = message.scrapedAt;
                 return entity;
             });
 
-            // Batch insert articles using query builder for better performance
-            await queryRunner.manager
-                .createQueryBuilder()
-                .insert()
-                .into(NewsArticleEntity)
-                .values(articles)
-                .orUpdate(['content', 'author', 'imageUrl', 'scrapedAt'], ['url', 'portal'])
-                .execute();
-
-            await queryRunner.commitTransaction();
+            await this.entityManager.save(articles);
 
             this.logger.log(
                 `Successfully stored ${articles.length} articles from ${message.portalName}`
             );
         } catch (error) {
-            await queryRunner.rollbackTransaction();
             this.logger.error('Error storing news articles:', error);
             throw error;
-        } finally {
-            await queryRunner.release();
         }
+    }
+
+    async addArticle(userId: string, articleDto: AddArticleDto): Promise<NewsArticleResponseDto> {
+        const user = await this.entityManager.findOneBy(User, { id: userId });
+
+        const article = new NewsArticleEntity({
+            ...articleDto,
+            author: user.name,
+        });
+
+        await this.entityManager.save(article);
+
+        return article;
     }
 
     async findArticles(queryParams: NewsQueryParamsDto): Promise<NewsArticlesResponseDto> {
@@ -77,11 +71,11 @@ export class NewsStorageService {
         }
 
         if (portal) {
-            whereConditions.portal = portal;
+            whereConditions.portal = portal.toLowerCase();
         }
 
         if (section) {
-            whereConditions.section = section;
+            whereConditions.section = section.toLowerCase();
         }
 
         if (fromDate && toDate) {
@@ -89,12 +83,12 @@ export class NewsStorageService {
         }
 
         // Get total count
-        const total = await this.newsRepository.count({
+        const total = await this.entityManager.count(NewsArticleEntity, {
             where: whereConditions,
         });
 
         // Get paginated results
-        const articles = await this.newsRepository.find({
+        const articles = await this.entityManager.find(NewsArticleEntity, {
             where: whereConditions,
             order: {
                 [sortBy]: sortOrder,
@@ -112,26 +106,63 @@ export class NewsStorageService {
     }
 
     async getPortals(): Promise<string[]> {
-        const result = await this.newsRepository
-            .createQueryBuilder('article')
-            .select('DISTINCT article.portal')
-            .orderBy('article.portal')
-            .getRawMany();
+        const result = await this.entityManager.find(NewsArticleEntity, {
+            select: ['portal'],
+            order: {
+                portal: 'ASC',
+            },
+        });
 
-        return result.map((item) => item.portal);
+        return [...new Set(result.map((item) => item.portal))];
     }
 
     async getSections(): Promise<string[]> {
-        const result = await this.newsRepository
-            .createQueryBuilder('article')
-            .select('DISTINCT article.section')
-            .orderBy('article.section')
-            .getRawMany();
+        const result = await this.entityManager.find(NewsArticleEntity, {
+            select: ['section'],
+            order: {
+                section: 'ASC',
+            },
+        });
 
-        return result.map((item) => item.section);
+        return [...new Set(result.map((item) => item.section))];
     }
 
     async getArticleById(id: string): Promise<NewsArticleEntity | null> {
-        return this.newsRepository.findOneBy({ id });
+        return this.entityManager.findOneBy(NewsArticleEntity, { id });
+    }
+
+    async likeArticle(id: string, userId: string): Promise<NewsArticleEntity> {
+        const article = await this.entityManager.findOneOrFail(NewsArticleEntity, {
+            where: { id },
+        });
+        const user = await this.entityManager.findOneBy(User, { id: userId });
+
+        article.likedBy = [...new Set([...(article.likedBy || []), user])];
+        await this.entityManager.save(article);
+
+        return article;
+    }
+
+    async commentOnArticle(
+        id: string,
+        userId: string,
+        commentDto: CommentDto
+    ): Promise<NewsArticleEntity> {
+        const article = await this.entityManager.findOneOrFail(NewsArticleEntity, {
+            where: { id },
+        });
+        const user = await this.entityManager.findOneBy(User, { id: userId });
+
+        const comment = new CommentEntity({});
+        comment.content = commentDto.content;
+        comment.user = user;
+        comment.article = article;
+
+        await this.entityManager.save(comment);
+
+        article.comments = [...new Set([...(article.comments || []), comment])];
+        await this.entityManager.save(article);
+
+        return article;
     }
 }

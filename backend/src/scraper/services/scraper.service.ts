@@ -1,137 +1,212 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { newsPortals } from '../configs/portals.config';
-import { NewsArticle, NewsMessage, NewsPortalConfig, NewsSection } from '../types/news.type';
-import * as puppeteer from 'puppeteer';
-import { Retry } from '../decorators/retry.decorator';
-import { RetryUtility } from '../utils/retry.util';
+import { NewsArticle, NewsMessage } from '../types/news.type';
 import { InjectQueue } from '@nestjs/bullmq';
 import { NEWS_QUEUE } from 'src/common/constants/queue.constant';
 import { Queue } from 'bullmq';
+import * as cheerio from 'cheerio';
+
+interface Section {
+    name: string;
+    url: string;
+}
 
 @Injectable()
 export class ScraperService {
     private readonly logger = new Logger(ScraperService.name);
-    private readonly portals: NewsPortalConfig[] = newsPortals;
-    // import should be added to the top of the file
-    // import * as cheerio from 'cheerio';
-    // private $: cheerio.CheerioAPI;
+    private $: cheerio.CheerioAPI;
 
     constructor(@InjectQueue(NEWS_QUEUE) private readonly newsQueue: Queue) {}
 
-    @Cron(CronExpression.EVERY_HOUR, { name: 'scraper', timeZone: 'BST' })
+    @Cron(CronExpression.EVERY_2_HOURS, { name: 'scraper', timeZone: 'BST' })
     async handleScraping() {
         this.logger.log('Starting news scraping...');
 
-        try {
-            const browser = await puppeteer.launch({
-                headless: true,
-            });
+        await this.scapeProthomAlo();
+        await this.scrapeSamakal();
 
-            for (const portal of this.portals) {
-                const articles = await this.scrapePortal(browser, portal);
-
-                if (articles.length > 0) {
-                    const message: NewsMessage = {
-                        articles,
-                        portalName: portal.name,
-                        scrapedAt: new Date(),
-                        totalArticles: articles.length,
-                    };
-
-                    await this.newsQueue.add('news', message);
-                }
-            }
-
-            await browser.close();
-        } catch (error) {
-            this.logger.error(`Error during scraping: ${error.message}`);
-        }
+        this.logger.log('Finished news scraping...');
     }
 
-    @Retry({
-        maxAttempts: 3,
-        delayMs: 1000,
-        exponentialBackoff: true,
-        maxDelayMs: 10000,
-    })
-    private async scrapePortal(
-        browser: puppeteer.Browser,
-        portal: NewsPortalConfig
-    ): Promise<NewsArticle[]> {
-        const articles: NewsArticle[] = [];
+    private async scapeProthomAlo() {
+        this.logger.log('Scraping Prothom Alo...');
 
-        for (const section of portal.sections) {
-            try {
-                const sectionArticles = await this.scrapeSectionWithRetry(browser, portal, section);
-                articles.push(...sectionArticles);
-            } catch (error) {
-                this.logger.error(
-                    `Error scraping ${portal.name} - ${section.name}: ${error.message}`
-                );
-            }
-        }
-
-        return articles;
-    }
-
-    private async scrapeSectionWithRetry(
-        browser: puppeteer.Browser,
-        portal: NewsPortalConfig,
-        section: NewsSection
-    ): Promise<NewsArticle[]> {
-        return RetryUtility.withRetry(
-            async () => {
-                const page = await browser.newPage();
-
-                try {
-                    await page.setUserAgent(
-                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                    );
-
-                    await page.goto(`${portal.baseUrl}${section.url}`, {
-                        waitUntil: 'networkidle0',
-                        timeout: 30000,
-                    });
-
-                    const articles = await page.$$eval(
-                        section.selector.article,
-                        (elements, selector, portalName, sectionName) => {
-                            return elements.map((element) => ({
-                                title:
-                                    element.querySelector(selector.title)?.textContent?.trim() ||
-                                    '',
-                                content:
-                                    element.querySelector(selector.content)?.textContent?.trim() ||
-                                    '',
-                                url: element.querySelector('a')?.href || '',
-                                author: selector.author
-                                    ? element.querySelector(selector.author)?.textContent?.trim()
-                                    : undefined,
-                                publishedAt: new Date(),
-                                portal: portalName,
-                                section: sectionName,
-                                imageUrl: selector.imageUrl
-                                    ? element.querySelector(selector.imageUrl)?.getAttribute('src')
-                                    : undefined,
-                            }));
-                        },
-                        section.selector,
-                        portal.name,
-                        section.name
-                    );
-
-                    return articles;
-                } finally {
-                    await page.close();
-                }
+        const sections: Section[] = [
+            {
+                name: 'National',
+                url: 'https://en.prothomalo.com/api/v1/collections/bangladesh',
             },
             {
-                maxAttempts: 3,
-                delayMs: 2000,
-                exponentialBackoff: true,
-                maxDelayMs: 10000,
-            }
-        );
+                name: 'International',
+                url: 'https://en.prothomalo.com/api/v1/collections/international',
+            },
+            {
+                name: 'Sports',
+                url: 'https://en.prothomalo.com/api/v1/collections/sports',
+            },
+            {
+                name: 'Opinion',
+                url: 'https://en.prothomalo.com/api/v1/collections/opinion',
+            },
+            {
+                name: 'Business',
+                url: 'https://en.prothomalo.com/api/v1/collections/business',
+            },
+            {
+                name: 'Youth',
+                url: 'https://en.prothomalo.com/api/v1/collections/youth',
+            },
+            {
+                name: 'Entertainment',
+                url: 'https://en.prothomalo.com/api/v1/collections/entertainment',
+            },
+            {
+                name: 'Lifestyle',
+                url: 'https://en.prothomalo.com/api/v1/collections/lifestyle',
+            },
+            {
+                name: 'Claim vs Fact',
+                url: 'https://en.prothomalo.com/api/v1/collections/claim-vs-fact',
+            },
+        ];
+
+        for (const section of sections) {
+            this.logger.log(`Scraping Prothom Alo ${section.name}...`);
+
+            const response = await fetch(section.url);
+            const data: {
+                items: {
+                    story: {
+                        headline: string;
+                        url: string;
+                        'author-name': string;
+                        'hero-image-s3-key': string;
+                        'last-published-at': string;
+                        cards: {
+                            'story-elements': {
+                                text: string;
+                            }[];
+                        }[];
+                    };
+                }[];
+            } = await response.json();
+
+            const articles: NewsArticle[] = data?.items?.map((item) => {
+                return {
+                    title: item.story.headline,
+                    content:
+                        item.story.cards
+                            ?.map((card) =>
+                                card['story-elements']?.map((element) => element.text).join(' ')
+                            )
+                            .join(' ') || '',
+                    url: item.story.url,
+                    author: item.story['author-name'],
+                    publishedAt: new Date(item.story['last-published-at']),
+                    portal: 'Prothom Alo',
+                    section: section.name,
+                    imageUrl: item.story['hero-image-s3-key']
+                        ? `https://images.prothomalo.com/${item.story['hero-image-s3-key']}`
+                        : undefined,
+                };
+            });
+
+            const newsMessage: NewsMessage = {
+                articles,
+                portalName: 'Prothom Alo',
+                scrapedAt: new Date(),
+                totalArticles: articles.length,
+            };
+
+            await this.newsQueue.add(NEWS_QUEUE, newsMessage);
+
+            this.logger.log(`Scraped ${articles.length} articles from Prothom Alo ${section.name}`);
+        }
+    }
+
+    private async scrapeSamakal() {
+        this.logger.log('Scraping Samakal...');
+
+        const sections: Section[] = [
+            {
+                name: 'National',
+                url: 'https://en.samakal.com/ajax/load/categorynews/1/30/0/0',
+            },
+            {
+                name: 'International',
+                url: 'https://en.samakal.com/ajax/load/categorynews/15/30/0/0',
+            },
+            {
+                name: 'Politics',
+                url: 'https://en.samakal.com/ajax/load/categorynews/22/30/0/0',
+            },
+            {
+                name: 'Sports',
+                url: 'https://en.samakal.com/ajax/load/categorynews/9/30/0/0',
+            },
+            {
+                name: 'Entertainment',
+                url: 'https://en.samakal.com/ajax/load/categorynews/33/30/0/0',
+            },
+            {
+                name: 'Opinion',
+                url: 'https://en.samakal.com/ajax/load/categorynews/65/30/0/0',
+            },
+            {
+                name: 'Lifestyle',
+                url: 'https://en.samakal.com/ajax/load/categorynews/40/30/0/0',
+            },
+            {
+                name: 'Business',
+                url: 'https://en.samakal.com/ajax/load/categorynews/3/30/0/0',
+            },
+        ];
+
+        for (const section of sections) {
+            this.logger.log(`Scraping Samakal ${section.name}...`);
+
+            const response = await fetch(section.url);
+            const data: {
+                headline: string;
+                url: string;
+                created_at: string;
+                reporter: string;
+                thumb: string;
+            }[] = await response.json();
+
+            const contents = await Promise.all(
+                data?.map(async (item) => {
+                    const detailResponse = await fetch(item.url);
+                    const detailData = await detailResponse.text();
+                    this.$ = cheerio.load(detailData);
+
+                    return this.$('.newsBody').text();
+                })
+            );
+
+            const articles: NewsArticle[] = data?.map((item, index) => {
+                return {
+                    title: item.headline,
+                    content: contents[index],
+                    url: item.url,
+                    author: item.reporter,
+                    publishedAt: new Date(item.created_at),
+                    portal: 'Samakal',
+                    section: section.name,
+                    imageUrl: item.thumb,
+                };
+            });
+
+            const newsMessage: NewsMessage = {
+                articles,
+                portalName: 'Samakal',
+                scrapedAt: new Date(),
+                totalArticles: articles.length,
+            };
+
+            await this.newsQueue.add(NEWS_QUEUE, newsMessage);
+
+            this.logger.log(`Scraped ${articles.length} articles from Samakal ${section.name}`);
+        }
     }
 }
