@@ -31,7 +31,10 @@ export class BookmarkService {
                 user: { id: userId },
                 article: { id: article.id },
             },
-            relations: ['article'],
+            relations: {
+                article: true,
+                user: true,
+            },
         });
 
         if (existingBookmark) {
@@ -55,6 +58,7 @@ export class BookmarkService {
             where: { user: { id: userId } },
             relations: {
                 article: true,
+                user: true,
             },
             order: { createdAt: 'DESC' },
         });
@@ -67,6 +71,9 @@ export class BookmarkService {
             where: {
                 id: bookmarkId,
                 user: { id: userId },
+            },
+            relations: {
+                user: true,
             },
         });
 
@@ -87,7 +94,10 @@ export class BookmarkService {
                 id: bookmarkId,
                 user: { id: userId },
             },
-            relations: ['article'],
+            relations: {
+                article: true,
+                user: true,
+            },
         });
 
         if (!bookmark) {
