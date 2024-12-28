@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './auth/guards/access-token.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import { DBModule } from './db/db.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { UserModule } from './user/user.module';
@@ -28,10 +27,10 @@ import { NotificationModule } from './notification/notification.module';
             provide: APP_GUARD,
             useClass: AtGuard,
         },
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: ResponseTransformInterceptor,
-        },
+        // {
+        //     provide: APP_INTERCEPTOR,
+        //     useClass: ResponseTransformInterceptor,
+        // },
         {
             provide: APP_FILTER,
             useClass: HttpExceptionFilter,
