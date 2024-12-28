@@ -3,7 +3,6 @@ import {
     Get,
     Param,
     Query,
-    NotFoundException,
     ValidationPipe,
     HttpStatus,
     HttpCode,
@@ -61,11 +60,14 @@ export class NewsController {
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     async getArticleById(@Param('id') id: string): Promise<NewsArticleResponseDto> {
-        const article = await this.newsStorageService.getArticleById(id);
-        if (!article) {
-            throw new NotFoundException(`Article with ID ${id} not found`);
-        }
-        return article;
+        return this.newsStorageService.getArticleById(id);
+    }
+
+    @Public()
+    @Get(':id/similar')
+    @HttpCode(HttpStatus.OK)
+    async getSimilarArticles(@Param('id') id: string): Promise<NewsArticlesResponseDto> {
+        return this.newsStorageService.getSimilarArticles(id);
     }
 
     @Patch('like/:id')

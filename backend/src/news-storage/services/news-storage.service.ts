@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { Like, Between, EntityManager, In } from 'typeorm';
 import { NewsArticleEntity } from '../entities/news-article.entity';
@@ -12,6 +12,7 @@ import { AddArticleDto } from '../dto/add-article.dto';
 import { Queue } from 'bullmq';
 import { NOTIFICATION_QUEUE } from 'src/common/constants/queue.constant';
 import { InjectQueue } from '@nestjs/bullmq';
+import { SimilarityService } from './similarity.service';
 
 @Injectable()
 export class NewsStorageService {
@@ -20,7 +21,8 @@ export class NewsStorageService {
     constructor(
         @InjectEntityManager()
         private readonly entityManager: EntityManager,
-        @InjectQueue(NOTIFICATION_QUEUE) private readonly notificationsQueue: Queue
+        @InjectQueue(NOTIFICATION_QUEUE) private readonly notificationsQueue: Queue,
+        private readonly similarityService: SimilarityService
     ) {}
 
     async storeNewsArticles(message: NewsMessage): Promise<void> {
@@ -160,7 +162,24 @@ export class NewsStorageService {
     }
 
     async getArticleById(id: string): Promise<NewsArticleEntity | null> {
-        return this.entityManager.findOneBy(NewsArticleEntity, { id });
+        const article = await this.entityManager.findOneBy(NewsArticleEntity, { id });
+
+        if (!article) {
+            throw new NotFoundException(`Article with ID ${id} not found`);
+        }
+
+        return article;
+    }
+
+    async getSimilarArticles(id: string): Promise<NewsArticlesResponseDto> {
+        const similarArticles = await this.similarityService.findSimilarArticles(id);
+
+        return {
+            data: similarArticles,
+            total: similarArticles.length,
+            limit: similarArticles.length,
+            offset: 0,
+        };
     }
 
     async likeArticle(id: string, userId: string): Promise<NewsArticleEntity> {

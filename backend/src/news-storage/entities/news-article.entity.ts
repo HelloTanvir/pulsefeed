@@ -1,9 +1,10 @@
-import { AbstractEntity } from 'src/db/abstract.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { AbstractEntity } from '../../db/abstract.entity';
+import { User } from '../../user/entities/user.entity';
+import { Entity, Column, ManyToMany, JoinTable, OneToMany, Index } from 'typeorm';
 import { CommentEntity } from './comment.entity';
 
 @Entity()
+@Index('news_search_vector_idx', { synchronize: false })
 export class NewsArticleEntity extends AbstractEntity<NewsArticleEntity> {
     @Column()
     title: string;
@@ -41,4 +42,12 @@ export class NewsArticleEntity extends AbstractEntity<NewsArticleEntity> {
 
     @Column({ default: false })
     createdByAdmin: boolean;
+
+    @Column({
+        type: 'tsvector',
+        select: false,
+        generatedType: 'STORED',
+        asExpression: `to_tsvector('english', coalesce(title, '') || ' ' || coalesce(content, ''))`,
+    })
+    searchVector: any;
 }

@@ -10,6 +10,7 @@ import { BookmarkController } from './controllers/bookmark.controller';
 import { CommentEntity } from './entities/comment.entity';
 import { BullModule } from '@nestjs/bullmq';
 import { NOTIFICATION_QUEUE } from 'src/common/constants/queue.constant';
+import { SimilarityService } from './services/similarity.service';
 
 @Module({
     imports: [
@@ -19,6 +20,6 @@ import { NOTIFICATION_QUEUE } from 'src/common/constants/queue.constant';
         }),
     ],
     controllers: [NewsController, BookmarkController],
-    providers: [NewsStorageService, NewsConsumerService, BookmarkService],
+    providers: [NewsStorageService, SimilarityService, NewsConsumerService, BookmarkService],
 })
 export class NewsStorageModule {}
