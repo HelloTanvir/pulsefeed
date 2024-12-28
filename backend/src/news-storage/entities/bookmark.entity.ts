@@ -1,12 +1,12 @@
-import { AbstractEntity } from 'src/db/abstract.entity';
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { AbstractEntity } from '../../db/abstract.entity';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { NewsArticleEntity } from './news-article.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('bookmarks')
-@Unique(['userId', 'article']) // Prevent duplicate bookmarks
 export class BookmarkEntity extends AbstractEntity<BookmarkEntity> {
     @Column()
-    userId: string;
+    user: User;
 
     @ManyToOne(() => NewsArticleEntity)
     @JoinColumn()

@@ -1,24 +1,23 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 import { BookmarkEntity } from '../entities/bookmark.entity';
 import { NewsArticleEntity } from '../entities/news-article.entity';
 import { CreateBookmarkDto, BookmarkResponseDto } from '../dto/bookmark.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class BookmarkService {
     constructor(
-        @InjectRepository(BookmarkEntity)
-        private readonly bookmarkRepository: Repository<BookmarkEntity>,
-        @InjectRepository(NewsArticleEntity)
-        private readonly newsRepository: Repository<NewsArticleEntity>
+        @InjectEntityManager()
+        private readonly entityManager: EntityManager
     ) {}
 
     async createBookmark(
         userId: string,
         createBookmarkDto: CreateBookmarkDto
     ): Promise<BookmarkResponseDto> {
-        const article = await this.newsRepository.findOneBy({
+        const article = await this.entityManager.findOneBy(NewsArticleEntity, {
             id: createBookmarkDto.articleId,
         });
 
@@ -27,9 +26,9 @@ export class BookmarkService {
         }
 
         // Check if bookmark already exists
-        const existingBookmark = await this.bookmarkRepository.findOne({
+        const existingBookmark = await this.entityManager.findOne(BookmarkEntity, {
             where: {
-                userId,
+                user: { id: userId },
                 article: { id: article.id },
             },
             relations: ['article'],
@@ -39,20 +38,24 @@ export class BookmarkService {
             throw new ConflictException('Article already bookmarked');
         }
 
-        const bookmark = this.bookmarkRepository.create({
-            userId,
+        const user = await this.entityManager.findOneBy(User, { id: userId });
+
+        const bookmark = new BookmarkEntity({
+            user,
             article,
             note: createBookmarkDto.note,
         });
 
-        const savedBookmark = await this.bookmarkRepository.save(bookmark);
+        const savedBookmark = await this.entityManager.save(bookmark);
         return this.transformToResponseDto(savedBookmark);
     }
 
     async getBookmarks(userId: string): Promise<BookmarkResponseDto[]> {
-        const bookmarks = await this.bookmarkRepository.find({
-            where: { userId },
-            relations: ['article'],
+        const bookmarks = await this.entityManager.find(BookmarkEntity, {
+            where: { user: { id: userId } },
+            relations: {
+                article: true,
+            },
             order: { createdAt: 'DESC' },
         });
 
@@ -60,10 +63,10 @@ export class BookmarkService {
     }
 
     async removeBookmark(userId: string, bookmarkId: string): Promise<void> {
-        const bookmark = await this.bookmarkRepository.findOne({
+        const bookmark = await this.entityManager.findOne(BookmarkEntity, {
             where: {
                 id: bookmarkId,
-                userId,
+                user: { id: userId },
             },
         });
 
@@ -71,7 +74,7 @@ export class BookmarkService {
             throw new NotFoundException('Bookmark not found');
         }
 
-        await this.bookmarkRepository.remove(bookmark);
+        await this.entityManager.remove(bookmark);
     }
 
     async updateBookmarkNote(
@@ -79,10 +82,10 @@ export class BookmarkService {
         bookmarkId: string,
         note: string
     ): Promise<BookmarkResponseDto> {
-        const bookmark = await this.bookmarkRepository.findOne({
+        const bookmark = await this.entityManager.findOne(BookmarkEntity, {
             where: {
                 id: bookmarkId,
-                userId,
+                user: { id: userId },
             },
             relations: ['article'],
         });
@@ -92,7 +95,7 @@ export class BookmarkService {
         }
 
         bookmark.note = note;
-        const updatedBookmark = await this.bookmarkRepository.save(bookmark);
+        const updatedBookmark = await this.entityManager.save(bookmark);
         return this.transformToResponseDto(updatedBookmark);
     }
 
