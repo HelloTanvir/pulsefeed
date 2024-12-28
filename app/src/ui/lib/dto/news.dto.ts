@@ -9,3 +9,7 @@ export interface NewsQueryParamsDto {
   sortBy?: "publishedAt" | "scrapedAt" | "title"; // default: 'publishedAt'
   sortOrder?: "ASC" | "DESC"; // default: 'DESC'
 }
+
+export interface CommentDto {
+  content: string;
+}

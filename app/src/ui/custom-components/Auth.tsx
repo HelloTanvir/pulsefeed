@@ -1,32 +1,83 @@
-import { FC, FormEvent, useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { FC, FormEvent, useEffect, useState } from "react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { LoginDto, SignUpDto } from "@/lib/dto/auth.dto";
+import { AuthService } from "@/lib/services/auth.service";
 
 interface Props {
-  onAuthenticated: () => void;
+  defaultScreen?: "login" | "signup";
 }
 
-const Auth: FC<Props> = ({ onAuthenticated }) => {
+interface FormState {
+  login: LoginDto;
+  signup: SignUpDto;
+}
+
+const Auth: FC<Props> = ({ defaultScreen = "login" }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const [state, setState] = useState<FormState>({
+    login: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+    signup: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    // Perform form validation
+  useEffect(() => {
+    setIsLogin(defaultScreen === "login");
+  }, [defaultScreen]);
 
-    // Perform form submission
+  const handleInputChange = (key: string, value: string) => {
+    if (isLogin) {
+      setState((prev) => ({ ...prev, login: { ...prev.login, [key]: value } }));
+    } else {
+      setState((prev) => ({
+        ...prev,
+        signup: { ...prev.signup, [key]: value },
+      }));
+    }
+  };
 
-    onAuthenticated()
-  }
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    let success = false;
+
+    const authService = new AuthService();
+    if (isLogin) {
+      const res = await authService.login(state.login);
+      success = res.success;
+    } else {
+      const res = await authService.signup(state.signup);
+      success = res.success;
+    }
+
+    if (success) {
+      window?.location?.replace('/');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Header */}
       <div className="text-center pt-10 mb-8">
-        <h1 className="text-3xl font-bold text-blue-400" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <h1
+          className="text-3xl font-bold text-blue-400"
+          style={{ fontFamily: "Montserrat, sans-serif" }}
+        >
           PulseFeed
         </h1>
-        <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <p
+          className="text-xs text-gray-400 mt-1"
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
           Stay Updated, Stay in the Loop
         </p>
       </div>
@@ -39,8 +90,8 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
             <button
               className={`flex-1 pb-4 text-center ${
                 isLogin
-                  ? 'border-b-2 border-blue-400 text-blue-400'
-                  : 'text-gray-400 hover:text-white'
+                  ? "border-b-2 border-blue-400 text-blue-400"
+                  : "text-gray-400 hover:text-white"
               }`}
               onClick={() => setIsLogin(true)}
             >
@@ -49,8 +100,8 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
             <button
               className={`flex-1 pb-4 text-center ${
                 !isLogin
-                  ? 'border-b-2 border-blue-400 text-blue-400'
-                  : 'text-gray-400 hover:text-white'
+                  ? "border-b-2 border-blue-400 text-blue-400"
+                  : "text-gray-400 hover:text-white"
               }`}
               onClick={() => setIsLogin(false)}
             >
@@ -71,6 +122,7 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
                     id="name"
                     className="w-full bg-gray-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your full name"
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                   />
                 </div>
               </div>
@@ -86,6 +138,7 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
                   id="email"
                   className="w-full bg-gray-700 rounded-lg py-3 px-4 pl-11 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your email"
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                 />
                 <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
               </div>
@@ -101,6 +154,9 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
                   id="password"
                   className="w-full bg-gray-700 rounded-lg py-3 px-4 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                 />
                 <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 <button
@@ -117,18 +173,60 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
               </div>
             </div>
 
+            {!isLogin && (
+              <div className="space-y-2">
+                <label className="text-sm text-gray-300" htmlFor="password">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    className="w-full bg-gray-700 rounded-lg py-3 px-4 pl-11 pr-11 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Confirm your password"
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
+                  />
+                  <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3.5"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {isLogin && (
               <div className="flex justify-end">
-                <button className="text-sm text-blue-400 hover:text-blue-300">
-                  Forgot Password?
-                </button>
+                <label className="text-sm text-gray-400 flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    name="remember"
+                    onChange={(e) =>
+                      setState((prev) => ({
+                        ...prev,
+                        login: { ...prev.login, remember: e.target.checked },
+                      }))
+                    }
+                  />
+                  <span>Remember me</span>
+                </label>
               </div>
             )}
 
             <button
-              type="submit"              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-3 px-4 flex items-center justify-center space-x-2 transition-colors"
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-3 px-4 flex items-center justify-center space-x-2 transition-colors"
             >
-              <span>{isLogin ? 'Login' : 'Create Account'}</span>
+              <span>{isLogin ? "Login" : "Create Account"}</span>
               <ArrowRight className="h-5 w-5" />
             </button>
 
@@ -146,12 +244,20 @@ const Auth: FC<Props> = ({ onAuthenticated }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <button className="flex items-center justify-center space-x-2 bg-gray-700 hover:bg-gray-600 rounded-lg py-3 px-4 transition-colors">
-                <img src="/api/placeholder/20/20" alt="Google" className="w-5 h-5" />
+                <img
+                  src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
                 <span>Google</span>
               </button>
               <button className="flex items-center justify-center space-x-2 bg-gray-700 hover:bg-gray-600 rounded-lg py-3 px-4 transition-colors">
-                <img src="/api/placeholder/20/20" alt="Github" className="w-5 h-5" />
-                <span>GitHub</span>
+                <img
+                  src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000"
+                  alt="Facebook"
+                  className="w-5 h-5"
+                />
+                <span>Facebook</span>
               </button>
             </div>
           </form>

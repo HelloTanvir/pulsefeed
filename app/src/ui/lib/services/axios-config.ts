@@ -59,7 +59,7 @@ export class HttpClient {
             const { data } = await this.axiosWithoutAuth.patch(
               "/auth/refresh-token",
               {
-                refresh_token: localStorage.getItem("refresh_token"),
+                refreshToken: localStorage.getItem("refresh_token"),
               }
             );
 

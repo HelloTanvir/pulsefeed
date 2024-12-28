@@ -1,4 +1,4 @@
-import { NewsQueryParamsDto } from "../dto/news.dto";
+import { CommentDto, NewsQueryParamsDto } from "../dto/news.dto";
 import { News } from "../types/news.type";
 import { BaseApiService } from "./base-api.service";
 
@@ -43,9 +43,9 @@ export class NewsService extends BaseApiService {
     );
   }
 
-  async commentOnArticle(articleId: string): Promise<News | null> {
+  async commentOnArticle(articleId: string, dto: CommentDto): Promise<News | null> {
     return this.handleResponse<News>(
-      this.authenticatedClient.patch(`/news/comment/${articleId}`)
+      this.authenticatedClient.patch(`/news/comment/${articleId}`, dto)
     );
   }
 }

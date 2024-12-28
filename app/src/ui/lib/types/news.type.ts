@@ -9,8 +9,8 @@ export interface News {
     portal: string;
     section: string;
     imageUrl?: string;
-    publishedAt: Date;
-    scrapedAt: Date;
+    publishedAt: string;
+    scrapedAt: string;
     likedBy: User[];
     comments: Comment[];
 }
