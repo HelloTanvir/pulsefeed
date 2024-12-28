@@ -75,7 +75,7 @@ export class AuthService {
             throw new ForbiddenException('invalid credentials');
         }
 
-        const expiresIn = loginDto.remember ? '30d' : '15m';
+        const expiresIn = loginDto.remember ? '30d' : '7d';
         const tokens = await this.getTokens(user.id, expiresIn);
         const hashedRefreshToken = await this.hashService.hashString(tokens.refresh_token);
 
@@ -155,7 +155,7 @@ export class AuthService {
                 },
                 {
                     secret: this.configService.getOrThrow('AT_SECRET_KEY'),
-                    expiresIn: expiresIn || '15m', // 15 minutes
+                    expiresIn: expiresIn || '7d', // 1 week
                 }
             ),
 
@@ -166,7 +166,7 @@ export class AuthService {
                 },
                 {
                     secret: this.configService.getOrThrow('RT_SECRET_KEY'),
-                    expiresIn: '7d', // 1 week
+                    expiresIn: '30d', // 1 month
                 }
             ),
         ]);
