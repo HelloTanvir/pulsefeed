@@ -18,7 +18,7 @@ export class NotificationController {
         return this.notificationService.getUserNotifications(userId);
     }
 
-    @Patch(':id/note')
+    @Patch(':id')
     @HttpCode(HttpStatus.OK)
     @ApiBearerAuth()
     async updateNote(
