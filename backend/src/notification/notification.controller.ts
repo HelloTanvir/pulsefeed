@@ -21,7 +21,7 @@ export class NotificationController {
     @Patch(':id')
     @HttpCode(HttpStatus.OK)
     @ApiBearerAuth()
-    async updateNote(
+    async markNotificationAsRead(
         @GetCurrentUser('userId') userId: string,
         @Param('id') notificationId: string
     ): Promise<NotificationEntity> {
