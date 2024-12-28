@@ -127,6 +127,10 @@ export class NewsStorageService {
             order: {
                 [sortBy]: sortOrder,
             },
+            relations: {
+                likedBy: true,
+                comments: true,
+            },
             skip: offset,
             take: limit,
         });
@@ -162,7 +166,13 @@ export class NewsStorageService {
     }
 
     async getArticleById(id: string): Promise<NewsArticleEntity | null> {
-        const article = await this.entityManager.findOneBy(NewsArticleEntity, { id });
+        const article = await this.entityManager.findOne(NewsArticleEntity, {
+            where: { id },
+            relations: {
+                likedBy: true,
+                comments: true,
+            },
+        });
 
         if (!article) {
             throw new NotFoundException(`Article with ID ${id} not found`);
