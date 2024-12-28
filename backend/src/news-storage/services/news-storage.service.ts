@@ -83,6 +83,7 @@ export class NewsStorageService {
 
         const article = new NewsArticleEntity({
             ...articleDto,
+            section: articleDto.section.toLowerCase(),
             author: user.name,
         });
 
