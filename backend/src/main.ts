@@ -7,7 +7,8 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
     app.enableCors({
-        origin: ['*'], // allow all origins for now, but you should change this to an array of allowed origins in production
+        // allow all origins for now, but you should change this to an array of allowed origins in production
+        origin: ['*', 'http://localhost:3000'],
     });
 
     app.useGlobalPipes(
