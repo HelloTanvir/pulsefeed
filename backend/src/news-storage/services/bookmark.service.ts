@@ -119,6 +119,7 @@ export class BookmarkService {
                 portal: bookmark.article.portal,
                 section: bookmark.article.section,
                 publishedAt: bookmark.article.publishedAt,
+                imageUrl: bookmark.article.imageUrl,
             },
             createdAt: bookmark.createdAt,
             note: bookmark.note,

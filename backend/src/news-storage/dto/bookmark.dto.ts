@@ -28,6 +28,8 @@ export class BookmarkResponseDto {
         section: string;
         /** @example 2021-01-01T00:00:00.000Z */
         publishedAt: Date;
+        /** @example Article image url */
+        imageUrl?: string;
     };
     /** @example 2021-01-01T00:00:00.000Z */
     createdAt: Date;
