@@ -49,4 +49,28 @@ export class NotificationService {
 
         return notifications;
     }
+
+    async markNotificationAsRead(
+        userId: string,
+        notificationId: string
+    ): Promise<NotificationEntity> {
+        const notification = await this.entityManager.findOne(NotificationEntity, {
+            where: {
+                id: notificationId,
+                user: {
+                    id: userId,
+                },
+            },
+        });
+
+        if (!notification) {
+            return null;
+        }
+
+        notification.isRead = true;
+
+        await this.entityManager.save(notification);
+
+        return notification;
+    }
 }
