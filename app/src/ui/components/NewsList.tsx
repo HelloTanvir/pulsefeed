@@ -10,6 +10,7 @@ import { UserService } from "@/lib/services/user.service";
 import { BookmarksService } from "@/lib/services/bookmarks.service";
 import LatestUpdates from "./LatestUpdates";
 import toast from "react-hot-toast";
+import { User } from "@/lib/types/user.type";
 
 interface Props {
   isSection?: boolean;
@@ -18,9 +19,18 @@ interface Props {
 const NewsList: FC<Props> = ({ isSection = false }) => {
   const navigate = useNavigate();
   const { sectionName } = useParams();
+  const [user, setUser] = useState<User | null>(null);
   const [newsItems, setNewsItems] = useState<News[]>([]);
   const [newsOffset, setNewsOffset] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const userService = new UserService();
+    (async () => {
+      const _user = await userService.getCurrentUser();
+      setUser(_user);
+    })();
+  }, []);
 
   useEffect(() => {
     setNewsOffset(0);
@@ -54,20 +64,15 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
 
   const handleSubscribe = async () => {
     if (!sectionName) return;
-
-    const userService = new UserService();
-
-    const user = await userService.getCurrentUser();
     if (!user) return navigate("/login");
 
+    const userService = new UserService();
     await userService.subscribeToSection({ name: sectionName });
 
     toast.success(`Subscribed to ${capitalizeFirstLetter(sectionName)}!`);
   };
 
   const handleCreateBookmark = async (articleId: string) => {
-    const userService = new UserService();
-    const user = await userService.getCurrentUser();
     if (!user) return navigate("/login");
 
     const toastID = toast.loading("Waiting...");
@@ -91,15 +96,18 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
         <div className="grid grid-cols-12 gap-6">
           {/* News Feed */}
           <div className="col-span-8">
-            {isSection && (
-              <button
-                onClick={handleSubscribe}
-                className="bg-gray-800/50 hover:bg-gray-800 duration-75 border border-gray-700 hover:border-gray-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2"
-              >
-                <CircleCheckBig className="h-5 w-5" /> Subscribe to{" "}
-                {capitalizeFirstLetter(sectionName!)}
-              </button>
-            )}
+            {isSection &&
+              !user?.subscribedSections?.includes(
+                sectionName?.toLowerCase() ?? ""
+              ) && (
+                <button
+                  onClick={handleSubscribe}
+                  className="bg-gray-800/50 hover:bg-gray-800 duration-75 border border-gray-700 hover:border-gray-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2"
+                >
+                  <CircleCheckBig className="h-5 w-5" /> Subscribe to{" "}
+                  {capitalizeFirstLetter(sectionName!)}
+                </button>
+              )}
 
             <div className="flex flex-col gap-6">
               {newsItems.map((item) => (
