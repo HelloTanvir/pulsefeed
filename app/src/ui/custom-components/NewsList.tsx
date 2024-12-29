@@ -61,6 +61,8 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
     if (!user) return navigate("/login");
 
     await userService.subscribeToSection({ name: sectionName });
+
+    toast.success(`Subscribed to ${capitalizeFirstLetter(sectionName)}!`);
   };
 
   const handleCreateBookmark = async (articleId: string) => {
