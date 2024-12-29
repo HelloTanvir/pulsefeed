@@ -66,6 +66,8 @@ const NewsDetails = () => {
 
     const newsService = new NewsService();
     await newsService.likeArticle(articleId!);
+
+    toast.success("Thanks for liking the article!");
   };
 
   const handleSubmitComment = async (e: FormEvent<HTMLFormElement>) => {
@@ -82,6 +84,7 @@ const NewsDetails = () => {
       if (updatedArticle) {
         setComments(updatedArticle.comments);
         setComment("");
+        toast.success("Comment posted successfully!");
       }
     }
   };
