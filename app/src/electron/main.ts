@@ -4,7 +4,7 @@ import { isDev } from "./util.js";
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 1000,
+    width: 1500,
     height: 1000,
     autoHideMenuBar: true,
   });
