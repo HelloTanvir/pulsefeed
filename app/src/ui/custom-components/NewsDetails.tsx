@@ -7,6 +7,7 @@ import { BookmarkIcon, ThumbsUp } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import Header from "./Header";
+import toast from "react-hot-toast";
 
 const NewsDetails = () => {
   const navigate = useNavigate();
@@ -48,9 +49,13 @@ const NewsDetails = () => {
 
   const handleCreateBookmark = async (articleId: string) => {
     await handleAuthCheck();
+    
+    const toastID = toast.loading("Waiting...");
 
     const bookmarksService = new BookmarksService();
     await bookmarksService.createBookmark({ articleId });
+
+    toast.success("Article bookmarked successfully!", { id: toastID });
   };
 
   const handleLike = async () => {

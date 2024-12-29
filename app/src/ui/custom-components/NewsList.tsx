@@ -9,6 +9,7 @@ import { formatDate } from "@/lib/utils";
 import { UserService } from "@/lib/services/user.service";
 import { BookmarksService } from "@/lib/services/bookmarks.service";
 import LatestUpdates from "./LatestUpdates";
+import toast from "react-hot-toast";
 
 interface Props {
   isSection?: boolean;
@@ -67,8 +68,12 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
     const user = await userService.getCurrentUser();
     if (!user) return navigate("/login");
 
+    const toastID = toast.loading("Waiting...");
+
     const bookmarksService = new BookmarksService();
     await bookmarksService.createBookmark({ articleId });
+
+    toast.success("Article bookmarked successfully!", { id: toastID });
   };
 
   const handlePagination = () => {
