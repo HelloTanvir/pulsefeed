@@ -17,6 +17,13 @@ const borderColors = [
   "border-teal-500",
   "border-cyan-500",
   "border-orange-500",
+  "border-lime-500",
+  "border-rose-500",
+  "border-emerald-500",
+  "border-violet-500",
+  "border-amber-500",
+  "border-fuchsia-500",
+  "border-lightBlue-500",
 ];
 
 const LatestUpdates = () => {
@@ -37,7 +44,14 @@ const LatestUpdates = () => {
         };
 
         const news = await newsService.getArticles(query);
-        setNewsItems((prev) => [...prev, ...news.data]);
+
+        if (news.data.length > 0) {
+          setNewsItems((prev) => {
+            const existingIds = prev.map((n) => n.id);
+            if (existingIds.includes(news.data[0].id)) return prev;
+            return [...prev, news.data[0]];
+          });
+        }
       });
 
       setLoading(false);
