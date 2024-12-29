@@ -5,7 +5,7 @@ import { FC, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import Header from "./Header";
 import { NewsQueryParamsDto } from "@/lib/dto/news.dto";
-import { formatDate } from "@/lib/utils";
+import { capitalizeFirstLetter, formatDate } from "@/lib/utils";
 import { UserService } from "@/lib/services/user.service";
 import { BookmarksService } from "@/lib/services/bookmarks.service";
 import LatestUpdates from "./LatestUpdates";
@@ -95,7 +95,7 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
                 className="bg-gray-800/50 hover:bg-gray-800 duration-75 border border-gray-700 hover:border-gray-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2"
               >
                 <CircleCheckBig className="h-5 w-5" /> Subscribe to{" "}
-                {sectionName}
+                {capitalizeFirstLetter(sectionName!)}
               </button>
             )}
 
@@ -116,7 +116,7 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
                         className="p-4 flex-grow"
                       >
                         <div className="text-sm text-blue-400 mb-1">
-                          {item.portal}
+                          {capitalizeFirstLetter(item.portal)}
                         </div>
                         <h3 className="text-lg font-semibold mb-2">
                           {item.title}

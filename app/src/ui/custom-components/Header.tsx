@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router";
 import Notification from "./Notification";
 import { User } from "@/lib/types/user.type";
+import { capitalizeFirstLetter } from "@/lib/utils";
 
 const Header = () => {
   const [sections, setSections] = useState<string[]>([]);
@@ -101,7 +102,7 @@ const Header = () => {
                       : "text-gray-300 hover:text-white pb-2 border-b-2 border-transparent hover:border-blue-500"
                   }
                 >
-                  {sectionName}
+                  {capitalizeFirstLetter(sectionName)}
                 </NavLink>
               </li>
             ))}

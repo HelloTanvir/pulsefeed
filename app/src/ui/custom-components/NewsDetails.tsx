@@ -2,7 +2,7 @@ import { BookmarksService } from "@/lib/services/bookmarks.service";
 import { NewsService } from "@/lib/services/news.service";
 import { UserService } from "@/lib/services/user.service";
 import { Comment, News } from "@/lib/types/news.type";
-import { formatDate } from "@/lib/utils";
+import { capitalizeFirstLetter, formatDate } from "@/lib/utils";
 import { BookmarkIcon, ThumbsUp } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
@@ -109,7 +109,7 @@ const NewsDetails = () => {
               <div className="p-6 bg-[#0f1729]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-4">
-                    <span className="text-[#4d7cfe]">{article.portal}</span>
+                    <span className="text-[#4d7cfe]">{capitalizeFirstLetter(article.portal)}</span>
                     <span className="text-gray-400 text-sm">
                       {formatDate(article.publishedAt)}
                     </span>
@@ -217,7 +217,7 @@ const NewsDetails = () => {
                         {article.title}
                       </h3>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-[#4d7cfe]">{article.portal}</span>
+                        <span className="text-[#4d7cfe]">{capitalizeFirstLetter(article.portal)}</span>
                         <span className="text-gray-500">
                           {formatDate(article.publishedAt)}
                         </span>

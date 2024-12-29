@@ -35,3 +35,7 @@ export function getTimeDifference(date: string) {
   if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
 }
+
+export function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

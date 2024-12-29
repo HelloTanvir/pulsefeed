@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Header from "./Header";
-import { formatDate, getTimeDifference } from "@/lib/utils";
+import {
+  capitalizeFirstLetter,
+  formatDate,
+  getTimeDifference,
+} from "@/lib/utils";
 import { Link, useNavigate } from "react-router";
 import { UserService } from "@/lib/services/user.service";
 
@@ -83,11 +87,11 @@ const Bookmarks = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <span className="text-sm text-blue-400">
-                        {item.article.portal}
+                        {capitalizeFirstLetter(item.article.portal)}
                       </span>
                       <span className="mx-2 text-gray-500">•</span>
                       <span className="text-sm text-gray-400">
-                        {item.article.section}
+                        {capitalizeFirstLetter(item.article.section)}
                       </span>
                     </div>
 

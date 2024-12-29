@@ -1,7 +1,7 @@
 import { NewsQueryParamsDto } from "@/lib/dto/news.dto";
 import { NewsService } from "@/lib/services/news.service";
 import { News } from "@/lib/types/news.type";
-import { getTimeDifference } from "@/lib/utils";
+import { capitalizeFirstLetter, getTimeDifference } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
@@ -64,7 +64,7 @@ const LatestUpdates = () => {
         <RefreshCw size={20} className="mr-2" />
         Latest Updates
         <span className="ml-auto text-xs text-blue-400 font-normal">
-          One from each section
+          Most recent from each section
         </span>
       </h2>
 
@@ -77,7 +77,7 @@ const LatestUpdates = () => {
           >
             <Link to={`/news-details/${news.id}`}>
               <div className="text-gray-200 font-medium mb-1">
-                {news.section}
+                {capitalizeFirstLetter(news.section)}
               </div>
               <p className="text-gray-300 text-sm">{news.title}</p>
               <div className="text-xs text-gray-400 mt-2">
