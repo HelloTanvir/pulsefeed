@@ -1,3 +1,4 @@
+import { News } from "./news.type";
 import { User } from "./user.type";
 
 export interface Notification {
@@ -5,5 +6,6 @@ export interface Notification {
   message: string;
   isRead: boolean;
   user: User;
+  article: News;
   createdAt: string;
 }

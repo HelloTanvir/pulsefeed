@@ -37,6 +37,7 @@ export class NotificationConsumerService extends WorkerHost {
                 subscribedUsers.map((user) => {
                     return this.notificationService.createNotification(
                         user,
+                        job.data.article,
                         `New article from ${portal} in ${section}: ${title}`
                     );
                 })

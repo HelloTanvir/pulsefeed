@@ -1,13 +1,15 @@
 import { AuthService } from "@/lib/services/auth.service";
 import { NewsService } from "@/lib/services/news.service";
 import { UserService } from "@/lib/services/user.service";
-import { Bookmark, LogOut, Moon } from "lucide-react";
+import { Bookmark, LogOut, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router";
+import Notification from "./Notification";
+import { User } from "@/lib/types/user.type";
 
 const Header = () => {
   const [sections, setSections] = useState<string[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const newsService = new NewsService();
@@ -17,7 +19,7 @@ const Header = () => {
       setSections(sections);
 
       const user = await userService.getCurrentUser();
-      setIsLoggedIn(!!user);
+      setUser(user);
     })();
   }, []);
 
@@ -63,16 +65,25 @@ const Header = () => {
 
           {/* Right section - controls */}
           <div className="flex items-center justify-end space-x-3">
-            <button className="p-2 hover:bg-gray-800 rounded-full">
-              <Moon className="h-5 w-5" />
-            </button>
-            {isLoggedIn && (
-              <button
-                onClick={handleLogout}
-                className="p-2 hover:bg-gray-800 rounded-full"
+            {user ? (
+              <>
+                <Notification user={user} />
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span className="text-sm">Logout</span>
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white"
               >
-                <LogOut className="h-5 w-5" />
-              </button>
+                <UserCheck className="h-5 w-5" />
+                <span className="text-sm">Login</span>
+              </Link>
             )}
           </div>
         </div>

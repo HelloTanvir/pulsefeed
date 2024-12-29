@@ -5,6 +5,7 @@ import { User } from 'src/user/entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { NotificationEntity } from './entities/notification.entity';
 import { NotificationGateway } from './notification.gateway';
+import { NewsArticleEntity } from 'src/news-storage/entities/news-article.entity';
 
 @Injectable()
 export class NotificationService {
@@ -16,10 +17,15 @@ export class NotificationService {
         private readonly websocketGateway: NotificationGateway
     ) {}
 
-    async createNotification(user: User, message: string): Promise<NotificationEntity> {
+    async createNotification(
+        user: User,
+        article: NewsArticleEntity,
+        message: string
+    ): Promise<NotificationEntity> {
         const notification = new NotificationEntity({
             user: user,
             message,
+            article,
         });
 
         await this.entityManager.save(notification);
@@ -41,6 +47,10 @@ export class NotificationService {
                     id: userId,
                 },
                 isRead: false,
+            },
+            relations: {
+                article: true,
+                user: true,
             },
             order: {
                 createdAt: 'DESC',
