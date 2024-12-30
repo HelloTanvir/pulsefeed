@@ -4,6 +4,7 @@ import NewsList from "./components/NewsList";
 import NewsDetails from "./components/NewsDetails";
 import Bookmarks from "./components/Bookmarks";
 import Auth from "./components/Auth";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         </Routes>
       </BrowserRouter>
       <Toaster />
+      <ScrollToTop />
     </>
   );
 }
