@@ -16,12 +16,12 @@ import { DataSourceOptions } from 'typeorm';
                     password: configService.getOrThrow('POSTGRES_PASSWORD'),
                 };
 
-                const isDebug = configService.get('DEBUG') === 'true';
+                // const isDebug = configService.get('DEBUG') === 'true';
 
                 return {
                     ...options,
                     autoLoadEntities: true,
-                    synchronize: isDebug,
+                    // synchronize: isDebug,
                 };
             },
             inject: [ConfigService],
