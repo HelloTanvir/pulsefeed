@@ -13,7 +13,7 @@ import {
 import { NewsStorageService } from '../services/news-storage.service';
 import { NewsQueryParamsDto } from '../dto/query-params.dto';
 import { NewsArticleResponseDto, NewsArticlesResponseDto } from '../dto/news-response.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
 import { GetCurrentUser } from 'src/common/decorators/get-current-user.decorator';
 import { CommentDto } from '../dto/comment.dto';
@@ -35,6 +35,7 @@ export class NewsController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @ApiBearerAuth()
     async addArticle(
         @GetCurrentUser('userId') userId: string,
         @Body() articleDto: AddArticleDto

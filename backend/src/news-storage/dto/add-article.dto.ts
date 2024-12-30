@@ -11,10 +11,6 @@ export class AddArticleDto {
     @IsString()
     content: string;
 
-    url: string = '';
-
-    portal: string = '_admin';
-
     /** @example Article section */
     @IsNotEmpty()
     @IsString()
@@ -24,8 +20,4 @@ export class AddArticleDto {
     @IsNotEmpty()
     @IsString()
     imageUrl?: string;
-
-    publishedAt: Date = new Date();
-
-    createdByAdmin: boolean = true;
 }

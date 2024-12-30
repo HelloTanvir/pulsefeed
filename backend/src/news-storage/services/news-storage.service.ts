@@ -83,6 +83,9 @@ export class NewsStorageService {
 
         const article = new NewsArticleEntity({
             ...articleDto,
+            url: 'none',
+            portal: '_admin',
+            createdByAdmin: true,
             section: articleDto.section.toLowerCase(),
             author: user.name,
         });

@@ -27,7 +27,7 @@ export class NewsArticleEntity extends AbstractEntity<NewsArticleEntity> {
     @Column({ nullable: true })
     imageUrl?: string;
 
-    @Column({ type: 'timestamp' })
+    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     publishedAt: Date;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
