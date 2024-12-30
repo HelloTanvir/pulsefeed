@@ -34,9 +34,7 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
 
   useEffect(() => {
     setNewsOffset(0);
-  }, [sectionName]);
 
-  useEffect(() => {
     const newsService = new NewsService();
     (async () => {
       setLoading(true);
@@ -51,16 +49,11 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
       }
 
       const news = await newsService.getArticles(query);
-
-      if (newsOffset > 0) {
-        setNewsItems((prev) => [...prev, ...news.data]);
-      } else {
-        setNewsItems(news.data);
-      }
+      setNewsItems(news.data);
 
       setLoading(false);
     })();
-  }, [isSection, sectionName, newsOffset]);
+  }, [isSection, sectionName]);
 
   const handleSubscribe = async () => {
     if (!sectionName) return;
@@ -83,8 +76,25 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
     toast.success("Article bookmarked successfully!", { id: toastID });
   };
 
-  const handlePagination = () => {
+  const handlePagination = async () => {
+    const newsService = new NewsService();
+    setLoading(true);
+
+    const query: NewsQueryParamsDto = {
+      limit: 20,
+      offset: newsOffset + 20,
+    };
+
+    if (isSection) {
+      query.section = sectionName;
+    }
+
+    const news = await newsService.getArticles(query);
+
+    setNewsItems((prev) => [...prev, ...news.data]);
     setNewsOffset((prev) => prev + 20);
+
+    setLoading(false);
   };
 
   return (

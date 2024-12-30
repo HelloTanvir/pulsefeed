@@ -1,11 +1,11 @@
 import { AbstractEntity } from '../../db/abstract.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { NewsArticleEntity } from './news-article.entity';
 import { User } from '../../user/entities/user.entity';
 
 @Entity('bookmarks')
 export class BookmarkEntity extends AbstractEntity<BookmarkEntity> {
-    @OneToOne(() => User)
+    @ManyToOne(() => User)
     @JoinColumn()
     user: User;
 

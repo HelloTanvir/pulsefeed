@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { Like, Between, EntityManager, In } from 'typeorm';
+import { Like, Between, EntityManager, In, Not, IsNull } from 'typeorm';
 import { NewsArticleEntity } from '../entities/news-article.entity';
 import { NewsMessage } from 'src/scraper/types/news.type';
 import { NewsQueryParamsDto } from '../dto/query-params.dto';
@@ -99,7 +99,10 @@ export class NewsStorageService {
             queryParams;
 
         // Build query conditions
-        const whereConditions: any = {};
+        const whereConditions: any = {
+            //skipping articles without image
+            imageUrl: Not(IsNull()),
+        };
 
         if (search) {
             whereConditions.title = Like(`%${search}%`);
@@ -199,6 +202,14 @@ export class NewsStorageService {
         });
         const user = await this.entityManager.findOneBy(User, { id: userId });
 
+        const isAlreadyLiked = article.likedBy.some((u) => u.id === user.id);
+        if (isAlreadyLiked) {
+            // Unlike the article
+            article.likedBy = article.likedBy.filter((u) => u.id !== user.id);
+            await this.entityManager.save(article);
+            return article;
+        }
+
         article.likedBy = [...new Set([...(article.likedBy || []), user])];
         await this.entityManager.save(article);
 
@@ -218,7 +229,7 @@ export class NewsStorageService {
         const comment = new CommentEntity({});
         comment.content = commentDto.content;
         comment.user = user;
-        comment.article = article;
+        // comment.article = article;
 
         await this.entityManager.save(comment);
 

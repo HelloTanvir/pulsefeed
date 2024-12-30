@@ -14,4 +14,8 @@ export class BookmarksService extends BaseApiService {
     );
     return response ?? [];
   }
+
+  async removeBookmark(id: string): Promise<void> {
+    await this.authenticatedClient.delete(`/bookmarks/${id}`);
+  }
 }

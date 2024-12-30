@@ -17,6 +17,7 @@ import {
 } from "@/lib/utils";
 import { Link, useNavigate } from "react-router";
 import { UserService } from "@/lib/services/user.service";
+import toast from "react-hot-toast";
 
 const Bookmarks = () => {
   const navigate = useNavigate();
@@ -33,6 +34,15 @@ const Bookmarks = () => {
       setBookmarks(_bookmarks);
     })();
   }, []);
+
+  const handleRemoveBookmark = async (id: string) => {
+    const bookmarksService = new BookmarksService();
+    await bookmarksService.removeBookmark(id);
+    setBookmarks((prevBookmarks) =>
+      prevBookmarks.filter((bookmark) => bookmark.id !== id)
+    );
+    toast.success("Bookmark removed successfully");
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -73,51 +83,61 @@ const Bookmarks = () => {
               key={item.id}
               className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors group"
             >
-              <Link
-                to={`/news-details/${item.article.id}`}
-                className="flex gap-4"
-              >
-                <img
-                  src={item.article.imageUrl}
-                  alt={item.article.title}
-                  className="w-48 h-32 object-cover rounded-lg"
-                />
+              <div className="flex gap-4">
+                <Link to={`/news-details/${item.article.id}`}>
+                  <img
+                    src={item.article.imageUrl}
+                    alt={item.article.title}
+                    className="w-48 h-32 object-cover rounded-lg"
+                  />
+                </Link>
 
                 <div className="flex-grow">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-sm text-blue-400">
-                        {capitalizeFirstLetter(item.article.portal)}
-                      </span>
-                      <span className="mx-2 text-gray-500">•</span>
-                      <span className="text-sm text-gray-400">
-                        {capitalizeFirstLetter(item.article.section)}
-                      </span>
-                    </div>
+                    <Link to={`/news-details/${item.article.id}`}>
+                      <div>
+                        <span className="text-sm text-blue-400">
+                          {capitalizeFirstLetter(item.article.portal)}
+                        </span>
+                        <span className="mx-2 text-gray-500">•</span>
+                        <span className="text-sm text-gray-400">
+                          {capitalizeFirstLetter(item.article.section)}
+                        </span>
+                      </div>
+                    </Link>
 
                     <div className="flex gap-2">
-                      <button className="p-1.5 hover:bg-gray-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleRemoveBookmark(item.id)}
+                        className="p-1.5 hover:bg-gray-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
                         <Trash2 className="h-4 w-4 text-red-400" />
                       </button>
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-semibold mt-2 mb-3">
-                    {item.article.title}
-                  </h3>
+                  <Link to={`/news-details/${item.article.id}`}>
+                    <h3 className="text-lg font-semibold mt-2 mb-3">
+                      {item.article.title}
+                    </h3>
+                  </Link>
 
-                  <div className="flex items-center text-sm text-gray-400 gap-4">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{getTimeDifference(item.article.publishedAt)}</span>
+                  <Link to={`/news-details/${item.article.id}`}>
+                    <div className="flex items-center text-sm text-gray-400 gap-4">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          {getTimeDifference(item.article.publishedAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>Bookmarked on {formatDate(item.createdAt)}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>Bookmarked on {formatDate(item.createdAt)}</span>
-                    </div>
-                  </div>
+                  </Link>
                 </div>
-              </Link>
+              </div>
             </div>
           ))}
         </div>
