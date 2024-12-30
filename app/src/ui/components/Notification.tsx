@@ -36,6 +36,8 @@ const Notification: FC<Props> = ({ user }) => {
     });
 
     socket.on(MESSAGE_TYPE, (newNotification) => {
+      console.log({ newNotification });
+      
       setNotifications((prev) => [newNotification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });

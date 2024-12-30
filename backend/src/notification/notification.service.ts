@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { NOTIFICATION_QUEUE } from 'src/common/constants/queue.constant';
 import { User } from 'src/user/entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { NotificationEntity } from './entities/notification.entity';
@@ -28,12 +27,9 @@ export class NotificationService {
             article,
         });
 
-        await this.entityManager.save(notification);
+        const createdNotification = await this.entityManager.save(notification);
 
-        this.websocketGateway.sendNotification(user.id, {
-            type: NOTIFICATION_QUEUE,
-            message,
-        });
+        this.websocketGateway.sendNotification(user.id, createdNotification);
 
         this.logger.log(`Created notification for user ${user.id}`);
 

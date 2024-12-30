@@ -21,4 +21,12 @@ export class UserService extends BaseApiService {
       this.authenticatedClient.patch("/user/subscribe-to-section", dto)
     );
   }
+
+  async unsubscribeFromSection(
+    dto: SubscribeToSectionDto
+  ): Promise<User | null> {
+    return this.handleResponse<User>(
+      this.authenticatedClient.patch("/user/unsubscribe-from-section", dto)
+    );
+  }
 }

@@ -3,6 +3,8 @@ export interface User {
   name: string;
   email: string;
   isAdmin: boolean;
-  subscribedSections: string[];
+  subscriptions: {
+    section: string;
+  }[];
   createdAt: string;
 }

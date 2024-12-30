@@ -18,16 +18,6 @@ export class UserController {
         return this.userService.findOneUserById(userId);
     }
 
-    @Patch(':userId')
-    @HttpCode(HttpStatus.OK)
-    @ApiBearerAuth()
-    updateUser(
-        @Param('userId') userId: string,
-        @Body() updateUserDto: UpdateUserDto
-    ): Promise<User> {
-        return this.userService.updateUser(userId, updateUserDto);
-    }
-
     @Patch('subscribe-to-section')
     @HttpCode(HttpStatus.OK)
     @ApiBearerAuth()
@@ -36,5 +26,32 @@ export class UserController {
         @Body() subscribeToSectionDto: SubscribeToSectionDto
     ): Promise<User> {
         return this.userService.subscribeToSection(userId, subscribeToSectionDto);
+    }
+
+    @Patch('unsubscribe-from-section')
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth()
+    unsubscribeFromSection(
+        @GetCurrentUser('userId') userId: string,
+        @Body() subscribeToSectionDto: SubscribeToSectionDto
+    ): Promise<User> {
+        return this.userService.unsubscribeFromSection(userId, subscribeToSectionDto);
+    }
+
+    @Patch('make-admin/:userId')
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth()
+    makeAdmin(@Param('userId') userId: string): Promise<User> {
+        return this.userService.makeAdmin(userId);
+    }
+
+    @Patch(':userId')
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth()
+    updateUser(
+        @Param('userId') userId: string,
+        @Body() updateUserDto: UpdateUserDto
+    ): Promise<User> {
+        return this.userService.updateUser(userId, updateUserDto);
     }
 }

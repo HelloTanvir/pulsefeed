@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../db/abstract.entity';
+import { SubscriptionEntity } from './subscription.entity';
 
 @Entity()
 export class User extends AbstractEntity<User> {
@@ -15,6 +16,6 @@ export class User extends AbstractEntity<User> {
     @Column({ select: false, default: false })
     isAdmin: boolean;
 
-    @Column({ type: 'simple-array', default: [] })
-    subscribedSections: string[];
+    @OneToMany(() => SubscriptionEntity, (subscription) => subscription.user)
+    subscriptions: SubscriptionEntity[];
 }

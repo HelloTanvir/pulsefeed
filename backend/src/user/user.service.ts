@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { SubscribeToSectionDto } from './dto/subscribe-to-section.dto';
+import { SubscriptionEntity } from './entities/subscription.entity';
 
 @Injectable()
 export class UserService {
@@ -43,7 +44,10 @@ export class UserService {
     }
 
     async findOneUserById(userId: string): Promise<User> {
-        const user = await this.entityManager.findOne(User, { where: { id: userId } });
+        const user = await this.entityManager.findOne(User, {
+            where: { id: userId },
+            relations: { subscriptions: true },
+        });
         if (!user) {
             throw new ForbiddenException('user not found');
         }
@@ -67,6 +71,13 @@ export class UserService {
         return user;
     }
 
+    async makeAdmin(userId: string): Promise<User> {
+        const user = await this.findOneUserById(userId);
+        user.isAdmin = true;
+        await this.entityManager.save(user);
+        return user;
+    }
+
     async removeUser(userId: string): Promise<User> {
         const user = await this.findOneUserById(userId);
         await this.entityManager.remove(user);
@@ -81,10 +92,39 @@ export class UserService {
 
         const section = subscribeToSectionDto.name.toLowerCase();
 
-        if (!user.subscribedSections.includes(section)) {
-            user.subscribedSections.push(section);
+        const existingSubscription = await this.entityManager.findOne(SubscriptionEntity, {
+            where: {
+                user: { id: userId },
+                section,
+            },
+        });
+
+        if (!existingSubscription) {
+            const subscription = new SubscriptionEntity({
+                section,
+            });
+
+            await this.entityManager.save(subscription);
+
+            user.subscriptions = [...(user.subscriptions || []), subscription];
+
             await this.entityManager.save(user);
         }
+
+        return user;
+    }
+
+    async unsubscribeFromSection(
+        userId: string,
+        subscribeToSectionDto: SubscribeToSectionDto
+    ): Promise<User> {
+        const user = await this.findOneUserById(userId);
+
+        const section = subscribeToSectionDto.name.toLowerCase();
+
+        user.subscriptions = user.subscriptions.filter((sub) => sub.section !== section);
+
+        await this.entityManager.save(user);
 
         return user;
     }

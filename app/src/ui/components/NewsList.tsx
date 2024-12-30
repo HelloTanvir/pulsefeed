@@ -60,9 +60,23 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
     if (!user) return navigate("/login");
 
     const userService = new UserService();
-    await userService.subscribeToSection({ name: sectionName });
+    const _user = await userService.subscribeToSection({ name: sectionName });
+    setUser(_user);
 
     toast.success(`Subscribed to ${capitalizeFirstLetter(sectionName)}!`);
+  };
+
+  const handleUnsubscribe = async () => {
+    if (!sectionName) return;
+    if (!user) return navigate("/login");
+
+    const userService = new UserService();
+    const _user = await userService.unsubscribeFromSection({
+      name: sectionName,
+    });
+    setUser(_user);
+
+    toast.success(`Unsubscribed from ${capitalizeFirstLetter(sectionName)}!`);
   };
 
   const handleCreateBookmark = async (articleId: string) => {
@@ -97,6 +111,34 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
     setLoading(false);
   };
 
+  const getSubscribeOrUnsubscribeButton = () => {
+    if (!user || !sectionName) return null;
+
+    if (
+      user.subscriptions?.some((s) => s.section === sectionName.toLowerCase())
+    ) {
+      return (
+        <button
+          onClick={handleUnsubscribe}
+          className="bg-gray-800/50 hover:bg-gray-800 duration-75 border border-gray-700 hover:border-gray-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2"
+        >
+          <CircleCheckBig className="h-5 w-5" /> Unsubscribe from{" "}
+          {capitalizeFirstLetter(sectionName)}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleSubscribe}
+        className="bg-gray-800/50 hover:bg-gray-800 duration-75 border border-gray-700 hover:border-gray-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2"
+      >
+        <CircleCheckBig className="h-5 w-5" /> Subscribe to{" "}
+        {capitalizeFirstLetter(sectionName)}
+      </button>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Header />
@@ -106,18 +148,7 @@ const NewsList: FC<Props> = ({ isSection = false }) => {
         <div className="grid grid-cols-12 gap-6">
           {/* News Feed */}
           <div className="col-span-8">
-            {isSection &&
-              !user?.subscribedSections?.includes(
-                sectionName?.toLowerCase() ?? ""
-              ) && (
-                <button
-                  onClick={handleSubscribe}
-                  className="bg-gray-800/50 hover:bg-gray-800 duration-75 border border-gray-700 hover:border-gray-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2"
-                >
-                  <CircleCheckBig className="h-5 w-5" /> Subscribe to{" "}
-                  {capitalizeFirstLetter(sectionName!)}
-                </button>
-              )}
+            {getSubscribeOrUnsubscribeButton()}
 
             <div className="flex flex-col gap-6">
               {newsItems.map((item) => (

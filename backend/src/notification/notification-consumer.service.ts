@@ -6,7 +6,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { Job } from 'bullmq';
 import { NewsArticleEntity } from 'src/news-storage/entities/news-article.entity';
-import { User } from 'src/user/entities/user.entity';
+import { SubscriptionEntity } from 'src/user/entities/subscription.entity';
 
 @Processor(NOTIFICATION_QUEUE)
 export class NotificationConsumerService extends WorkerHost {
@@ -22,16 +22,22 @@ export class NotificationConsumerService extends WorkerHost {
 
     async process(job: Job<{ article: NewsArticleEntity }>) {
         if (job.name === NOTIFICATION_QUEUE) {
-            this.logger.log(`Processing job with ID: ${job.id}`);
+            this.logger.log(`Processing notification job with ID: ${job.id}`);
 
             const {
                 article: { portal, section, title },
             } = job.data;
 
-            const subscribedUsers = await this.entityManager
-                .createQueryBuilder(User, 'user')
-                .where(':section = ANY(user.subscribedSections)', { section })
-                .getMany();
+            const subscriptions = await this.entityManager.find(SubscriptionEntity, {
+                where: {
+                    section,
+                },
+                relations: {
+                    user: true,
+                },
+            });
+
+            const subscribedUsers = subscriptions.map((sub) => sub.user);
 
             await Promise.all(
                 subscribedUsers.map((user) => {
