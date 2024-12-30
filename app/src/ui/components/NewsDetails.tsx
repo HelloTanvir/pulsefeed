@@ -185,7 +185,7 @@ const NewsDetails = () => {
                       >
                         <div className="flex items-center space-x-4">
                           <h4 className="text-gray-200 font-semibold">
-                            {comment.user.name}
+                            {comment.user?.name}
                           </h4>
                           <p className="text-gray-400">{comment.content}</p>
                         </div>
