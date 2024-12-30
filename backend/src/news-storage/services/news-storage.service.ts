@@ -177,7 +177,9 @@ export class NewsStorageService {
             where: { id },
             relations: {
                 likedBy: true,
-                comments: true,
+                comments: {
+                    user: true,
+                },
             },
         });
 
@@ -226,17 +228,19 @@ export class NewsStorageService {
     ): Promise<NewsArticleEntity> {
         const article = await this.entityManager.findOneOrFail(NewsArticleEntity, {
             where: { id },
+            relations: {
+                comments: true,
+            },
         });
         const user = await this.entityManager.findOneBy(User, { id: userId });
 
         const comment = new CommentEntity({});
         comment.content = commentDto.content;
         comment.user = user;
-        // comment.article = article;
 
         await this.entityManager.save(comment);
 
-        article.comments = [...new Set([...(article.comments || []), comment])];
+        article.comments = [...(article.comments || []), comment];
         await this.entityManager.save(article);
 
         return article;
