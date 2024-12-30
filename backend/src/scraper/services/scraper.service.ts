@@ -18,7 +18,7 @@ export class ScraperService {
 
     constructor(@InjectQueue(NEWS_QUEUE) private readonly newsQueue: Queue) {}
 
-    @Cron(CronExpression.EVERY_HOUR, { name: 'scraper', timeZone: 'BST' })
+    @Cron(CronExpression.EVERY_5_MINUTES, { name: 'scraper', timeZone: 'BST' })
     async handleScraping() {
         this.logger.log('Starting news scraping...');
 
