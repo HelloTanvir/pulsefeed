@@ -7,6 +7,7 @@ import { NewsArticleEntity } from './src/news-storage/entities/news-article.enti
 import { NotificationEntity } from './src/notification/entities/notification.entity';
 import { User } from './src/user/entities/user.entity';
 import { DataSource } from 'typeorm';
+import { SubscriptionEntity } from './src/user/entities/subscription.entity';
 
 config();
 
@@ -21,5 +22,13 @@ export default new DataSource({
     username: configService.getOrThrow('POSTGRES_USER'),
     password: configService.getOrThrow('POSTGRES_PASSWORD'),
     migrations: ['migrations/**'],
-    entities: [Auth, User, NewsArticleEntity, CommentEntity, BookmarkEntity, NotificationEntity],
+    entities: [
+        Auth,
+        User,
+        NewsArticleEntity,
+        CommentEntity,
+        BookmarkEntity,
+        NotificationEntity,
+        SubscriptionEntity,
+    ],
 });
