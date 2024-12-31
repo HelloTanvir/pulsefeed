@@ -30,7 +30,7 @@ const Header = () => {
 
     const authService = new AuthService();
     await authService.logout();
-    window.location.reload();
+    window.location.href = "/login";
   };
 
   return (

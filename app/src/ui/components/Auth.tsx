@@ -2,6 +2,7 @@ import { FC, FormEvent, useEffect, useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { LoginDto, SignUpDto } from "@/lib/dto/auth.dto";
 import { AuthService } from "@/lib/services/auth.service";
+import { Link } from "react-router";
 
 interface Props {
   defaultScreen?: "login" | "signup";
@@ -67,7 +68,7 @@ const Auth: FC<Props> = ({ defaultScreen = "login" }) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Header */}
-      <div className="text-center pt-10 mb-8">
+      <Link to='/' className="text-center pt-10 mb-8">
         <h1
           className="text-3xl font-bold text-blue-400"
           style={{ fontFamily: "Montserrat, sans-serif" }}
@@ -80,7 +81,7 @@ const Auth: FC<Props> = ({ defaultScreen = "login" }) => {
         >
           Stay Updated, Stay in the Loop
         </p>
-      </div>
+      </Link>
 
       {/* Auth Container */}
       <div className="max-w-md w-full mx-auto px-4">
