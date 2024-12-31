@@ -10,7 +10,7 @@ const createWindow = () => {
   });
 
   if (isDev) win.loadURL("http://localhost:3000");
-  else win.loadFile(join(app.getAppPath(), "/dist-react/index.html"));
+  else win.loadFile(join(app.getAppPath(), "/dist/react/index.html"));
 };
 
 app.whenReady().then(() => {
